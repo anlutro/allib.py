@@ -17,9 +17,11 @@ def setup_logging(log_file=None, log_level=None, check_interactive=None):
 	if not log_file or log_file.lower() == 'stderr':
 		handler = logging.StreamHandler(sys.stderr)
 		log_file = 'STDERR'
+		check_interactive = False
 	elif log_file.lower() == 'stdout':
 		handler = logging.StreamHandler(sys.stdout)
 		log_file = 'STDOUT'
+		check_interactive = False
 	elif log_file:
 		handler = logging.handlers.WatchedFileHandler(log_file)
 		if check_interactive is None:
