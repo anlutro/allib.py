@@ -1,0 +1,20 @@
+# python
+*.egg-info
+*.pyc
+__pycache__
+/build
+/dist
+
+# virtualenv
+/bin
+/include
+/lib
+/local
+/share
+
+# pip
+/pip-selfcheck.json
+
+# pytest
+/.cache
+/.coverage
