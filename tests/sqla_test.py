@@ -7,20 +7,22 @@ def test_paginator_does_not_call_offset_when_page_eq_1():
 	query.count = mock.Mock(return_value=500)
 	query.offset = mock.Mock(return_value=query)
 	query.limit = mock.Mock(return_value=query)
+	query.all = mock.Mock(return_value=[])
 	paginator = Paginator(query, 1, 'http://localhost')
 	query.offset.assert_not_called()
 	query.limit.assert_called_once_with(50)
-	query.all.assert_called()
+	query.all.assert_called_once_with()
 
 def test_paginator_calls_offset_when_page_gt_1():
 	query = mock.Mock()
 	query.count = mock.Mock(return_value=500)
 	query.offset = mock.Mock(return_value=query)
 	query.limit = mock.Mock(return_value=query)
+	query.all = mock.Mock(return_value=[])
 	paginator = Paginator(query, 2, 'http://localhost')
 	query.offset.assert_called_once_with(50)
 	query.limit.assert_called_once_with(50)
-	query.all.assert_called()
+	query.all.assert_called_once_with()
 
 def test_paginator_preserves_qs():
 	query = mock.Mock()
