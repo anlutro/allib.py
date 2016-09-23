@@ -67,7 +67,7 @@ def get_config(args, default_location, defaults=None, types=None):
 	config = configparser.ConfigParser()
 	files = config.read(path)
 	if not files:
-		msg = 'Could not find a config file at path %r'. % path
+		msg = 'Could not find a config file at path %r' % path
 		if not args.config:
 			msg += '. Specify one with the -c/--config command line option.'
 		raise ConfigError(msg)
