@@ -1,6 +1,10 @@
 from collections import OrderedDict
 import math
-import urllib.parse as urlparse
+try:
+	from urllib.parse import urlparse, parse_qs, urlencode, urlunsplit
+except ImportError:
+	from urlparse import urlparse, parse_qs, urlunsplit
+	from urllib import urlencode
 
 
 class Paginator:
@@ -16,11 +20,11 @@ class Paginator:
 			query = query.offset(self.per_page * (page - 1))
 		self.items = query.limit(self.per_page).all()
 		self.page = page
-		self.last_page = math.ceil(self.total_count / self.per_page)
+		self.last_page = int(math.ceil(self.total_count / self.per_page))
 		self.pages = range(1, int(self.last_page) + 1)
 
-		self._url = urlparse.urlparse(url)
-		self._url_params = OrderedDict(urlparse.parse_qs(self._url.query).items())
+		self._url = urlparse(url)
+		self._url_params = OrderedDict(parse_qs(self._url.query).items())
 		if self.page_qs in self._url_params:
 			del self._url_params[self.page_qs]
 		self.url = self.url_for(self.page)
@@ -28,9 +32,9 @@ class Paginator:
 	def url_for(self, page):
 		query_params = self._url_params.copy()
 		query_params[self.page_qs] = [page]
-		query_string = urlparse.urlencode(query_params, doseq=True)
+		query_string = urlencode(query_params, doseq=True)
 
-		return urlparse.urlunsplit((
+		return urlunsplit((
 			self._url.scheme, self._url.netloc, self._url.path, query_string, ''
 		))
 
