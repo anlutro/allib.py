@@ -1,6 +1,6 @@
-# in python2, mock has to be installed as a pip package.
-# in python3, it's included with the unittest module.
+# in python3, the mock module is included with the unittest module. if you're
+# running python2 or want a more recent version, you install it with pip
 try:
-	from unittest import mock
-except ImportError:
 	import mock
+except ImportError:
+	from unittest import mock

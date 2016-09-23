@@ -6,7 +6,7 @@ from setuptools import setup
 setup(
 	name='allib',
 	packages=['allib'],
-	version='0.1.3',
+	version='0.1.4',
 	license='MIT',
 	description='Personal library of useful stuff.',
 	author='Andreas Lutro',
