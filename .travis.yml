@@ -9,6 +9,7 @@ python:
 install:
   - pip install -e .
   - pip install -r requirements_dev.txt
+  - '[[ $TRAVIS_PYTHON_VERSION != 3* ]] && pip install mock'
 
 script:
   - py.test
