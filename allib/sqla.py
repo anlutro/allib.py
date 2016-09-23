@@ -7,7 +7,7 @@ except ImportError:
 	from urllib import urlencode
 
 
-class Paginator:
+class Paginator(object):
 	PER_PAGE = 50
 	PAGE_QS = 'p'
 
