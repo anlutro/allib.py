@@ -43,6 +43,8 @@ def configparser_to_dict(config, defaults=None, types=None):
 				value = {}
 				for key, value in pairs:
 					value[key.strip()] = value.strip()
+			elif valid_type is str and isinstance(value, unicode):
+				valid_type = unicode
 
 			if valid_type is not None and not isinstance(value, valid_type):
 				msg = 'Invalid configuration value for {}:{} - expected {}, got {}'.format(
