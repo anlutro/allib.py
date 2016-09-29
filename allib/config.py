@@ -1,13 +1,75 @@
 from __future__ import absolute_import
 import copy
+
+
+_STR_TYPES = [str, bytes]
 try:
-	import configparser
-except ImportError:
-	import ConfigParser as configparser
+	_STR_TYPES.append(unicode) #pylint: disable=undefined-variable
+except NameError:
+	pass
 
 
 class ConfigError(Exception):
 	pass
+
+
+def _merge_defaults(defaults, confdict):
+	for key, value in defaults.items():
+		if key not in confdict:
+			confdict[key] = value
+		elif isinstance(value, dict) and isinstance(confdict[key], dict):
+			_merge_defaults(value, confdict[key])
+
+
+def _validate_value(value, valid_type, key):
+	if valid_type is str and not isinstance(value, str):
+		for alt_type in _STR_TYPES:
+			if isinstance(value, alt_type):
+				valid_type = alt_type
+				break
+
+	if valid_type is not None and not isinstance(value, valid_type):
+		msg = 'Invalid configuration value for {} - expected {}, got {}'.format(
+			key, valid_type, type(value))
+		raise ConfigError(msg)
+
+
+def _validate_dict(confdict, types, prefix=None):
+	for key, value in confdict.items():
+		if key not in types:
+			continue
+
+		pkey = ('%s[%s]' % (prefix, key)) if prefix else key
+
+		if isinstance(value, dict) and isinstance(types[key], dict):
+			_validate_dict(value, types[key], pkey)
+		else:
+			_validate_value(value, types[key], pkey)
+
+
+def _str_to_type(value, valid_type):
+	value_l = value.lower()
+	if value_l == 'false':
+		value = False
+	elif value_l == 'true':
+		value = True
+	elif value_l == 'null' or value_l == 'none':
+		value = None
+	elif valid_type is int or valid_type is float:
+		try:
+			value = valid_type(value)
+		except ValueError:
+			pass
+
+	if valid_type is list:
+		value = [v.strip() for v in str(value).split(',')]
+	elif valid_type is dict:
+		pairs = [v.strip().split(':') for v in str(value).split(',')]
+		value = {}
+		for key, value in pairs:
+			value[key.strip()] = value.strip()
+
+	return value
 
 
 def configparser_to_dict(config, defaults=None, types=None):
@@ -22,35 +84,9 @@ def configparser_to_dict(config, defaults=None, types=None):
 			valid_type = None
 			if types and section in types and item in types[section]:
 				valid_type = types[section][item]
-
-			value_l = value.lower()
-			if value_l == 'false':
-				value = False
-			elif value_l == 'true':
-				value = True
-			elif value_l == 'null' or value_l == 'none':
-				value = None
-			elif valid_type is int or valid_type is float:
-				try:
-					value = valid_type(value)
-				except ValueError:
-					pass
-
-			if valid_type is list:
-				value = [v.strip() for v in str(value).split(',')]
-			elif valid_type is dict:
-				pairs = [v.strip().split(':') for v in str(value).split(',')]
-				value = {}
-				for key, value in pairs:
-					value[key.strip()] = value.strip()
-			elif valid_type is str and isinstance(value, unicode):
-				valid_type = unicode
-
-			if valid_type is not None and not isinstance(value, valid_type):
-				msg = 'Invalid configuration value for {}:{} - expected {}, got {}'.format(
-					section, item, valid_type, type(value))
-				raise ConfigError(msg)
-
+			if valid_type:
+				value = _str_to_type(value, valid_type)
+				_validate_value(value, valid_type, '%s[%s]' % (section, item))
 			confdict[section][item] = value
 
 	return confdict
@@ -66,19 +102,41 @@ def get_config(args, default_location, defaults=None, types=None):
 	types: A dictionary of types to validate the config against.
 	'''
 	path = args.config or default_location
-	config = configparser.ConfigParser()
-	files = config.read(path)
-	if not files:
-		msg = 'Could not find a config file at path %r' % path
-		if not args.config:
-			msg += '. Specify one with the -c/--config command line option.'
-		raise ConfigError(msg)
 
-	confdict = configparser_to_dict(
-		config,
-		defaults if isinstance(defaults, dict) else None,
-		types,
-	)
+	if path.endswith('.yml') or path.endswith('.yaml'):
+		import yaml
+		with open(path) as file:
+			confdict = yaml.safe_load(file)
+		if defaults:
+			_merge_defaults(defaults, confdict)
+		if types:
+			_validate_dict(confdict, types)
+	elif path.endswith('.json'):
+		import json
+		with open(path) as file:
+			confdict = json.load(file)
+		if defaults:
+			_merge_defaults(defaults, confdict)
+		if types:
+			_validate_dict(confdict, types)
+	else:
+		try:
+			import configparser
+		except ImportError:
+			import ConfigParser as configparser
+		config = configparser.ConfigParser()
+		files = config.read(path)
+		if not files:
+			msg = 'Could not find a config file at path %r' % path
+			if not args.config:
+				msg += '. Specify one with the -c/--config command line option.'
+			raise ConfigError(msg)
+
+		confdict = configparser_to_dict(
+			config,
+			defaults if isinstance(defaults, dict) else None,
+			types,
+		)
 
 	if 'logging' not in confdict:
 		confdict['logging'] = {}
