@@ -1,0 +1,8 @@
+[[source]]
+url = "https://pypi.org/"
+verify_ssl = true
+
+[dev-packages]
+pytest-cov = "*"
+pytest = "*"
+pylint = "*"
