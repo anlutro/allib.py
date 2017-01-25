@@ -7,26 +7,35 @@ import os
 LOG = logging.getLogger(__name__)
 
 
-class CommandResult(object):
-	def __init__(self, exit_code, stdout, stderr, command):
-		self.exit_code = exit_code
-		self.stdout = stdout.strip()
-		self.stderr = stderr.strip()
-		self.command = command
+class CompletedProcess(object):
+	'''
+	This class mirrors python 3.5's subprocess.CompletedProcess, with some
+	added properties.
+	'''
+	def __init__(self, args, returncode, stdout=None, stderr=None):
+		self.args = args
+		self.returncode = returncode
+		self.stdout = stdout
+		self.stderr = stderr
 
 	@property
-	def was_successful(self):
-		return self.exit_code == 0
+	def success(self):
+		return self.returncode == 0
 
-	@property
-	def text(self):
-		return '\n'.join([self.stdout, self.stderr])
+	def __repr__(self):
+		args = [
+			'args={!r}'.format(self.args),
+			'returncode={!r}'.format(self.returncode),
+		]
+		if self.stdout is not None:
+			args.append('stdout={!r}'.format(self.stdout))
+		if self.stderr is not None:
+			args.append('stderr={!r}'.format(self.stderr))
+		return "{}({})".format(type(self).__name__, ', '.join(args))
 
 
 def popen(command, env=None, copy_env=True, **kwargs):
-	if isinstance(command, str):
-		command = shlex.split(command)
-
+	'''Wrapper around subprocess.Popen.'''
 	proc_env = os.environ if copy_env else {}
 	if env:
 		proc_env.update(env)
@@ -42,18 +51,44 @@ def popen(command, env=None, copy_env=True, **kwargs):
 	)
 
 
-def get_result(proc, command):
-	stdout, stderr = proc.communicate()
+def get_result(proc, command, timeout=None, check=False, input=None):
+	'''Get a CompletedProcess object from a subprocess.Popen.'''
+	try:
+		stdout, stderr = proc.communicate(input, timeout=timeout)
+	# this except is copied from python's subprocess.run, I don't really
+	# get the point of it but whatever
+	except subprocess.TimeoutExpired:
+		proc.kill()
+		stdout, stderr = proc.communicate()
+		# TODO: stderr is discarded
+		raise subprocess.TimeoutExpired(
+			proc.args, timeout, output=stdout
+		)
+	except:
+		proc.kill()
+		proc.wait()
+		raise
 
-	return CommandResult(
-		exit_code=proc.returncode,
-		stdout=stdout.decode(),
-		stderr=stderr.decode(),
-		command=command,
+	retcode = proc.poll()
+	if check and retcode > 0:
+		# TODO: stderr is discarded
+		raise subprocess.CalledProcessError(
+			retcode, proc.args, output=stdout
+		)
+
+	return CompletedProcess(
+		command=proc.args,
+		returncode=retcode,
+		stdout=stdout.decode().strip(),
+		stderr=stderr.decode().strip(),
 	)
 
 
-def run_command(command, **kwargs):
+def run(command, timeout=None, check=False, input=None, **kwargs):
+	'''This function sort of mirrors python 3.5's subprocess.run.'''
+	if isinstance(command, str):
+		command = shlex.split(command)
+
 	proc = popen(command, **kwargs)
 
-	return get_result(proc, command)
+	return get_result(proc, command, timeout=timeout, check=check, input=input)
