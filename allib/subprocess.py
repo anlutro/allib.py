@@ -77,7 +77,7 @@ def get_result(proc, command, timeout=None, check=False, input=None):
 		)
 
 	return CompletedProcess(
-		command=proc.args,
+		args=proc.args,
 		returncode=retcode,
 		stdout=stdout.decode().strip(),
 		stderr=stderr.decode().strip(),
