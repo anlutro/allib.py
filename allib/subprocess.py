@@ -51,7 +51,7 @@ def popen(command, env=None, copy_env=True, **kwargs):
 	)
 
 
-def get_result(proc, command, timeout=None, check=False, input=None):
+def get_result(proc, timeout=None, check=False, input=None):
 	'''Get a CompletedProcess object from a subprocess.Popen.'''
 	try:
 		stdout, stderr = proc.communicate(input, timeout=timeout)
@@ -91,4 +91,4 @@ def run(command, timeout=None, check=False, input=None, **kwargs):
 
 	proc = popen(command, **kwargs)
 
-	return get_result(proc, command, timeout=timeout, check=check, input=input)
+	return get_result(proc, timeout=timeout, check=check, input=input)
