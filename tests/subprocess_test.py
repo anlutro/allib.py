@@ -1,5 +1,8 @@
 import pytest
+import sys
 from allib.subprocess import run, CalledProcessError, TimeoutExpired
+
+pytest.mark.skipif(sys.version_info.major < 3)
 
 
 def test_simple_process():

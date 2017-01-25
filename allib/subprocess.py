@@ -97,9 +97,8 @@ def get_result(proc, timeout=None, check=False, input=None):
 	except subprocess.TimeoutExpired:
 		proc.kill()
 		stdout, stderr = proc.communicate()
-		# TODO: stderr is discarded
 		raise TimeoutExpired(
-			proc.args, timeout, output=stdout
+			proc.args, timeout, output=stdout, stderr=stderr
 		)
 	except:
 		proc.kill()
@@ -108,9 +107,8 @@ def get_result(proc, timeout=None, check=False, input=None):
 
 	retcode = proc.poll()
 	if check and retcode > 0:
-		# TODO: stderr is discarded
 		raise CalledProcessError(
-			retcode, proc.args, output=stdout
+			retcode, proc.args, output=stdout, stderr=stderr
 		)
 
 	return CompletedProcess(
