@@ -2,7 +2,8 @@ import pytest
 import sys
 from allib.subprocess import run, CalledProcessError, TimeoutExpired
 
-pytestmark = pytest.mark.skipif(sys.version_info.major < 3)
+pytestmark = pytest.mark.skipif(sys.version_info.major < 3,
+	reason='subprocess module needs Python 3+')
 
 
 def test_simple_process():
