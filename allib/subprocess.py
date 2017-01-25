@@ -7,6 +7,43 @@ import os
 LOG = logging.getLogger(__name__)
 
 
+class SubprocessError(Exception):
+	'''Copy-pasted from python 3.5'''
+	pass
+
+
+class CalledProcessError(SubprocessError):
+	'''Copy-pasted from python 3.5'''
+	def __init__(self, returncode, cmd, output=None, stderr=None):
+		self.returncode = returncode
+		self.cmd = cmd
+		self.output = output
+		self.stderr = stderr
+
+	def __str__(self):
+		return "Command '%s' returned non-zero exit status %d" % (self.cmd, self.returncode)
+
+	@property
+	def stdout(self):
+		return self.output
+
+
+class TimeoutExpired(SubprocessError):
+	'''Copy-pasted from python 3.5'''
+	def __init__(self, cmd, timeout, output=None, stderr=None):
+		self.cmd = cmd
+		self.timeout = timeout
+		self.output = output
+		self.stderr = stderr
+
+	def __str__(self):
+		return "Command '%s' timed out after %s seconds" % (self.cmd, self.timeout)
+
+	@property
+	def stdout(self):
+		return self.output
+
+
 class CompletedProcess(object):
 	'''
 	This class mirrors python 3.5's subprocess.CompletedProcess, with some
@@ -61,7 +98,7 @@ def get_result(proc, timeout=None, check=False, input=None):
 		proc.kill()
 		stdout, stderr = proc.communicate()
 		# TODO: stderr is discarded
-		raise subprocess.TimeoutExpired(
+		raise TimeoutExpired(
 			proc.args, timeout, output=stdout
 		)
 	except:
@@ -72,7 +109,7 @@ def get_result(proc, timeout=None, check=False, input=None):
 	retcode = proc.poll()
 	if check and retcode > 0:
 		# TODO: stderr is discarded
-		raise subprocess.CalledProcessError(
+		raise CalledProcessError(
 			retcode, proc.args, output=stdout
 		)
 

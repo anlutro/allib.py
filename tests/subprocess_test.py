@@ -1,6 +1,5 @@
 import pytest
-import subprocess
-from allib.subprocess import run
+from allib.subprocess import run, CalledProcessError, TimeoutExpired
 
 
 def test_simple_process():
@@ -15,10 +14,10 @@ def test_failed_process():
 
 
 def test_failed_process_throws_exception_when_check_true():
-	with pytest.raises(subprocess.CalledProcessError):
+	with pytest.raises(CalledProcessError):
 		result = run('false', check=True)
 
 
 def test_timed_out_process():
-	with pytest.raises(subprocess.TimeoutExpired):
+	with pytest.raises(TimeoutExpired):
 		result = run('sleep 1', timeout=0.1)
