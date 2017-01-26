@@ -94,7 +94,7 @@ def get_result(proc, timeout=None, check=False, input=None):
 		stdout, stderr = proc.communicate(input, timeout=timeout)
 	# this except is copied from python's subprocess.run, I don't really
 	# get the point of it but whatever
-	except subprocess.TimeoutExpired:
+	except subprocess.TimeoutExpired: # pylint: disable=no-member
 		proc.kill()
 		stdout, stderr = proc.communicate()
 		raise TimeoutExpired(
