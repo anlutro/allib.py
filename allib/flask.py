@@ -15,7 +15,7 @@ def transform_filename(static_dir, orig_filename, bust_extensions):
 	return orig_filename
 
 
-def cache_busting_url_defaults_factory(app, bust_extensions):
+def cache_busting_url_defaults_factory(app, bust_extensions): # pylint: disable=invalid-name
 	# keep a dict of rewritten URLs to prevent a `stat` every time url_for is
 	# called on a static file.
 	url_cache = {}
