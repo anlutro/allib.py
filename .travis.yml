@@ -8,12 +8,12 @@ python:
   - '3.6'
 
 install:
-  - pip install -e .
-  - pip install -r requirements_dev.txt
-  - 'if [[ $TRAVIS_PYTHON_VERSION = 2* ]]; then pip install mock; fi'
+  - pip install pipenv
+  - pipenv install --dev
+  - 'if [[ $TRAVIS_PYTHON_VERSION = 2* ]]; then pipenv install mock; fi'
 
 script:
-  - py.test
-  - pylint --rcfile=.pylintrc -f text -r n --confidence=HIGH,INFERENCE,INFERENCE_FAILURE allib
+  - pipenv run pytest
+  - pipenv run pylint -E allib
 
 sudo: false
