@@ -21,3 +21,6 @@ __pycache__
 # pytest
 /.cache
 /.coverage
+
+# pipfile/pipenv
+Pipfile.lock
