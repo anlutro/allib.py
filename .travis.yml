@@ -1,4 +1,6 @@
 language: python
+cache: pip
+sudo: false
 
 python:
   - '2.7'
@@ -15,5 +17,3 @@ install:
 script:
   - pipenv run pytest
   - pipenv run pylint -E allib
-
-sudo: false
