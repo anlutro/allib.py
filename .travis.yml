@@ -11,7 +11,7 @@ python:
 
 install:
   - pip install pipenv
-  - pipenv install --dev
+  - pipenv install --dev --upgrade
   - 'if [[ $TRAVIS_PYTHON_VERSION = 2* ]]; then pipenv install mock; fi'
 
 script:
