@@ -6,7 +6,47 @@ import sys
 LOG = logging.getLogger(__name__)
 
 
-def setup_logging(log_file=None, log_level=None, check_interactive=None):
+class ColorFormatter(logging.Formatter):
+	RESET = '\033[0m'
+
+	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = ('\033[1;%dm' % (i + 30) for i in range(8))
+
+	COLORS = {
+		logging.DEBUG: GREEN,
+		logging.INFO: BLUE,
+		logging.WARNING: MAGENTA,
+		logging.ERROR: YELLOW,
+		logging.CRITICAL: RED,
+	}
+
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+	def format(self, record):
+		if record.levelno in self.COLORS:
+			record.levelname = '%s%s%s' % (
+				self.COLORS[record.levelno],
+				record.levelname,
+				self.RESET,
+			)
+
+		return super().format(record)
+
+
+def setup_logging(
+	log_file=None,
+	log_level=None,
+	check_interactive=None,
+	colors=False,
+	shorten_levels=True,
+):
+	if shorten_levels:
+		# shorten long level names
+		logging._levelToName[logging.WARNING] = 'WARN'
+		logging._nameToLevel['WARN'] = logging.WARNING
+		logging._levelToName[logging.CRITICAL] = 'CRIT'
+		logging._nameToLevel['CRIT'] = logging.CRITICAL
+
 	if log_level is None:
 		log_level = logging.WARNING
 	elif isinstance(log_level, str):
@@ -28,8 +68,12 @@ def setup_logging(log_file=None, log_level=None, check_interactive=None):
 			check_interactive = True
 
 	# define the logging format
-	logfmt = '%(asctime)s [%(levelname)8s] [%(name)s] %(message)s'
-	formatter = logging.Formatter(logfmt)
+	if colors and log_file in ('STDERR', 'STDOUT'):
+		log_format = '\033[37m%(asctime)s %(levelname)16s\033[37m %(name)s \033[0m%(message)s'
+		formatter = ColorFormatter(log_format)
+	else:
+		log_format = '%(asctime)s [%(levelname)5s] [%(name)s] %(message)s'
+		formatter = logging.Formatter(log_format)
 	handler.setFormatter(formatter)
 
 	# add the logging handler for all loggers
@@ -42,7 +86,11 @@ def setup_logging(log_file=None, log_level=None, check_interactive=None):
 	if check_interactive:
 		if sys.__stderr__.isatty():
 			console_handler = logging.StreamHandler(sys.stderr)
-			console_handler.setFormatter(formatter)
+			if colors:
+				log_format = '\033[37m%(asctime)s %(levelname)16s\033[37m %(name)s \033[0m%(message)s'
+				console_handler.setFormatter(ColorFormatter(log_format))
+			else:
+				console_handler.setFormatter(formatter)
 			root.addHandler(console_handler)
 			LOG.info('set up logging to STDERR with level %s', log_level)
 		else:
