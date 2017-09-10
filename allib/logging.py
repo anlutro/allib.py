@@ -40,12 +40,20 @@ def setup_logging(
 	colors=False,
 	shorten_levels=True,
 ):
+	# shorten long level names
 	if shorten_levels:
-		# shorten long level names
-		logging._levelToName[logging.WARNING] = 'WARN'
-		logging._nameToLevel['WARN'] = logging.WARNING
-		logging._levelToName[logging.CRITICAL] = 'CRIT'
-		logging._nameToLevel['CRIT'] = logging.CRITICAL
+		if hasattr(logging, _levelNames):
+			# python 2.7, 3.3
+			logging._levelNames[logging.WARNING] = 'WARN'
+			logging._levelNames['WARN'] = logging.WARNING
+			logging._levelNames[logging.CRITICAL] = 'CRIT'
+			logging._levelNames['CRIT'] = logging.CRITICAL
+		else:
+			# python 3.4+
+			logging._levelToName[logging.WARNING] = 'WARN'
+			logging._nameToLevel['WARN'] = logging.WARNING
+			logging._levelToName[logging.CRITICAL] = 'CRIT'
+			logging._nameToLevel['CRIT'] = logging.CRITICAL
 
 	if log_level is None:
 		log_level = logging.WARNING
