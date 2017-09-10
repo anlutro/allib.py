@@ -42,7 +42,8 @@ def setup_logging(
 ):
 	# shorten long level names
 	if shorten_levels:
-		if hasattr(logging, _levelNames):
+		# pylint: disable=no-member
+		if hasattr(logging, '_levelNames'):
 			# python 2.7, 3.3
 			logging._levelNames[logging.WARNING] = 'WARN'
 			logging._levelNames['WARN'] = logging.WARNING
@@ -54,6 +55,7 @@ def setup_logging(
 			logging._nameToLevel['WARN'] = logging.WARNING
 			logging._levelToName[logging.CRITICAL] = 'CRIT'
 			logging._nameToLevel['CRIT'] = logging.CRITICAL
+		# pylint: enable=no-member
 
 	if log_level is None:
 		log_level = logging.WARNING
