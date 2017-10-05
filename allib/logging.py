@@ -103,7 +103,7 @@ def setup_logging(
 	if check_interactive:
 		if sys.__stderr__.isatty():
 			console_handler = logging.StreamHandler(sys.stderr)
-			formatter = get_formatter(color, shortened_levels=shorten_levels)
+			formatter = get_formatter(colors, shortened_levels=shorten_levels)
 			console_handler.setFormatter(formatter)
 			root.addHandler(console_handler)
 			LOG.info('set up log handler %r to STDERR with level %s',
