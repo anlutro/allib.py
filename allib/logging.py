@@ -6,7 +6,17 @@ import sys
 LOG = logging.getLogger(__name__)
 
 
-class ColorFormatter(logging.Formatter):
+def get_formatter(color, shortened_levels=True):
+	if color:
+		level_len = 16 if shortened_levels else 19
+		fmt = '\033[37m%(asctime)s %(levelname_colored)' + str(level_len) + 's\033[37m %(name)s \033[0m%(message)s'
+	else:
+		level_len = 5 if shortened_levels else 8
+		fmt = '%(asctime)s [%(levelname)' + str(level_len) + 's] [%(name)s] %(message)s'
+	return logging.Formatter(fmt)
+
+
+class ColorLogRecord(logging.LogRecord):
 	RESET = '\033[0m'
 
 	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = ('\033[1;%dm' % (i + 30) for i in range(8))
@@ -21,16 +31,11 @@ class ColorFormatter(logging.Formatter):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-
-	def format(self, record):
-		if record.levelno in self.COLORS:
-			record.levelname = '%s%s%s' % (
-				self.COLORS[record.levelno],
-				record.levelname,
-				self.RESET,
-			)
-
-		return super().format(record)
+		self.levelname_colored = '%s%s%s' % (
+			self.COLORS[self.levelno],
+			self.levelname,
+			self.RESET,
+		)
 
 
 def setup_logging(
@@ -40,6 +45,10 @@ def setup_logging(
 	colors=False,
 	shorten_levels=True,
 ):
+	# use custom log record class if we want colors
+	if colors:
+		logging.setLogRecordFactory(ColorLogRecord)
+
 	# shorten long level names
 	if shorten_levels:
 		# pylint: disable=no-member
@@ -78,30 +87,26 @@ def setup_logging(
 			check_interactive = True
 
 	# define the logging format
-	if colors and log_file in ('STDERR', 'STDOUT'):
-		log_format = '\033[37m%(asctime)s %(levelname)16s\033[37m %(name)s \033[0m%(message)s'
-		formatter = ColorFormatter(log_format)
-	else:
-		log_format = '%(asctime)s [%(levelname)5s] [%(name)s] %(message)s'
-		formatter = logging.Formatter(log_format)
+	formatter = get_formatter(
+		colors and log_file in ('STDERR', 'STDOUT'),
+		shortened_levels=shorten_levels,
+	)
 	handler.setFormatter(formatter)
 
 	# add the logging handler for all loggers
 	root.addHandler(handler)
 
-	LOG.info('set up logging to %s with level %s', log_file, log_level)
+	LOG.info('set up log handler %r to %s with level %s', handler, log_file, log_level)
 
 	# if logging to a file but the application is ran through an interactive
 	# shell, also log to STDERR
 	if check_interactive:
 		if sys.__stderr__.isatty():
 			console_handler = logging.StreamHandler(sys.stderr)
-			if colors:
-				log_format = '\033[37m%(asctime)s %(levelname)16s\033[37m %(name)s \033[0m%(message)s'
-				console_handler.setFormatter(ColorFormatter(log_format))
-			else:
-				console_handler.setFormatter(formatter)
+			formatter = get_formatter(color, shortened_levels=shorten_levels)
+			console_handler.setFormatter(formatter)
 			root.addHandler(console_handler)
-			LOG.info('set up logging to STDERR with level %s', log_level)
+			LOG.info('set up log handler %r to STDERR with level %s',
+				console_handler, log_level)
 		else:
 			LOG.info('sys.stderr is not a TTY, not logging to it')

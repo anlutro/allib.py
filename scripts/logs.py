@@ -2,6 +2,7 @@ import logging
 import allib.logging
 log = logging.getLogger('scripts.log')
 allib.logging.setup_logging(log_level=logging.DEBUG, colors=True)
+allib.logging.setup_logging(log_level=logging.DEBUG, colors=True)
 
 
 log.debug('debug test msg')
