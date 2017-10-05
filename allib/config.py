@@ -49,19 +49,17 @@ def _validate_dict(confdict, types, prefix=None):
 
 def _str_to_type(value, valid_type):
 	value_l = value.lower()
-	if value_l == 'false':
-		value = False
-	elif value_l == 'true':
-		value = True
-	elif value_l == 'null' or value_l == 'none':
-		value = None
-	elif valid_type is int or valid_type is float:
+	if valid_type is int or valid_type is float:
 		try:
 			value = valid_type(value)
 		except ValueError:
 			pass
-
-	if valid_type is list:
+	elif valid_type is bool:
+		if value_l in ('1', 'true', 'yes'):
+			value = True
+		elif value_l in ('', '0', 'false', 'no'):
+			value = False
+	elif valid_type is list:
 		value = [v.strip() for v in str(value).split(',')]
 	elif valid_type is dict:
 		pairs = [v.strip().split(':') for v in str(value).split(',')]
