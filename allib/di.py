@@ -4,6 +4,19 @@ import typing
 
 
 def provider(func=None, *, singleton=False):
+	"""
+	Decorator to mark a function as a provider.
+
+	Args:
+		singleton (bool): The returned value should be a singleton or shared
+			instance. If False (the default) the provider function will be
+			invoked again for every time it's needed for injection.
+
+	Example:
+		@provider
+		def myfunc() -> MyClass:
+			return MyClass(args)
+	"""
 	def _add_provider_annotations(wrapper, func):
 		wrapper.__di__ = getattr(func, '__di__', {})
 		hints = typing.get_type_hints(func)
@@ -27,12 +40,25 @@ def provider(func=None, *, singleton=False):
 
 
 def inject(*args, **kwargs):
+	"""
+	Mark a class or function for injection, meaning that a DI container knows
+	that it should inject dependencies into it.
+
+	Normally you won't need this as the injector will inject the required
+	arguments anyway, but it can be used to inject properties into a class
+	without having to specify it in the constructor, or to inject arguments
+	that aren't properly type hinted.
+
+	Example:
+		@di.inject('foo', MyClass)
+		class MyOtherClass: pass
+		assert isinstance(injector.get(MyOtherClass).foo, MyClass)
+	"""
 	def wrapper(obj):
 		if inspect.isclass(obj) or callable(obj):
 			inject_object(obj, *args, **kwargs)
 			return obj
-		else:
-			raise Exception("Don't know how to inject into %r" % obj)
+		raise Exception("Don't know how to inject into %r" % obj)
 	return wrapper
 
 
@@ -42,15 +68,25 @@ def inject_object(obj, var_name, var_type):
 	return obj
 
 
-class Module: pass
+class Module:
+	"""
+	A module is a collection of providers.
+	"""
+	pass
 
 
 class Injector:
+	"""
+	Class that knows how to do dependency injection.
+	"""
 	def __init__(self):
 		self.instances = {}
 		self.factories = {}
 
-	def register_module(self, module):
+	def register_module(self, module: Module):
+		"""
+		Register a module.
+		"""
 		if inspect.isclass(module):
 			module = self.get(module)
 		if isinstance(module, Module):
@@ -65,11 +101,17 @@ class Injector:
 				self.register_provider(func)
 
 	def register_provider(self, func):
+		"""
+		Register a provider function.
+		"""
 		if 'provides' not in getattr(func, '__di__', {}):
 			raise Exception('Function %r is not a provider' % func)
 		self.factories[func.__di__['provides']] = func
 
-	def get(self, thing):
+	def get(self, thing: type):
+		"""
+		Get an instance of some type.
+		"""
 		if thing in self.instances:
 			return self.instances[thing]
 
@@ -81,13 +123,13 @@ class Injector:
 			return ret
 
 		if inspect.isclass(thing):
-			return self.call_class_init(thing)
+			return self._call_class_init(thing)
 		elif callable(thing):
 			return thing(**self._guess_kwargs(thing))
 
 		raise Exception('not sure what thing is: %r' % thing)
 
-	def call_class_init(self, cls):
+	def _call_class_init(self, cls):
 		# if this statement is true, the class or its parent class(es) does not
 		# have an __init__ method defined and as such should not need any
 		# constructor arguments to be instantiated.
