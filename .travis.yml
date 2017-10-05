@@ -14,6 +14,6 @@ install:
 
 script:
   - py.test
-  - pylint --rcfile=.pylintrc -f text -r n --confidence=HIGH,INFERENCE,INFERENCE_FAILURE allib
+  - pylint -E allib
 
 sudo: false
