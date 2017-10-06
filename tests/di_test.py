@@ -1,4 +1,5 @@
-from allib import di
+import pytest
+di = pytest.importorskip('allib.di')
 
 
 def test_inject_into_function():
