@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import json
 import logging
 import logging.handlers
 import sys
@@ -6,12 +7,27 @@ import sys
 LOG = logging.getLogger(__name__)
 
 
-def get_formatter(color, shortened_levels=True):
-	if color:
-		level_len = 16 if shortened_levels else 19
+class JsonFormatter(logging.Formatter):
+	DEFAULT_FIELDS = ('levelname', 'name', 'msg')
+
+	def __init__(self, fields=None):
+		self.fields = tuple(fields) if fields else self.DEFAULT_FIELDS
+
+	def format(self, record):
+		data = {}
+		for key in record.__dict__:
+			if key in self.fields:
+				data[key] = getattr(record, key)
+		data['time'] = self.formatTime(record)
+		return json.dumps(data)
+
+
+def get_formatter(colors, shortened_levels=True):
+	level_len = 5 if shortened_levels else 8
+	if colors:
+		level_len += 11
 		fmt = '\033[37m%(asctime)s %(levelname_colored)' + str(level_len) + 's\033[37m %(name)s \033[0m%(message)s'
 	else:
-		level_len = 5 if shortened_levels else 8
 		fmt = '%(asctime)s [%(levelname)' + str(level_len) + 's] [%(name)s] %(message)s'
 	return logging.Formatter(fmt)
 
@@ -42,6 +58,8 @@ def setup_logging(
 	log_file=None,
 	log_level=None,
 	check_interactive=None,
+	json=False,
+	json_fields=None,
 	colors=False,
 	shorten_levels=True,
 ):
@@ -86,11 +104,14 @@ def setup_logging(
 		if check_interactive is None:
 			check_interactive = True
 
-	# define the logging format
-	formatter = get_formatter(
-		colors and log_file in ('STDERR', 'STDOUT'),
-		shortened_levels=shorten_levels,
-	)
+	if json:
+		formatter = JsonFormatter(fields=json_fields)
+	else:
+		# define the logging format
+		formatter = get_formatter(
+			colors=colors and log_file in ('STDERR', 'STDOUT'),
+			shortened_levels=shorten_levels,
+		)
 	handler.setFormatter(formatter)
 
 	# add the logging handler for all loggers
@@ -103,7 +124,7 @@ def setup_logging(
 	if check_interactive:
 		if sys.__stderr__.isatty():
 			console_handler = logging.StreamHandler(sys.stderr)
-			formatter = get_formatter(colors, shortened_levels=shorten_levels)
+			formatter = get_formatter(colors=colors, shortened_levels=shorten_levels)
 			console_handler.setFormatter(formatter)
 			root.addHandler(console_handler)
 			LOG.info('set up log handler %r to STDERR with level %s',
