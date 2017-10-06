@@ -62,7 +62,8 @@ def inject(*args, **kwargs):
 
 
 def inject_object(obj, var_name, var_type):
-	obj.__di__ = getattr(obj, '__di__', {})
+	if not hasattr(obj, '__di__'):
+		obj.__di__ = {}
 	obj.__di__.setdefault('inject', {})[var_name] = var_type
 	return obj
 
@@ -96,7 +97,7 @@ class Injector:
 		else:
 			raise Exception("Don't know how to register module: %r" % module)
 		for func in funcs:
-			if hasattr(func, '__di__') and func.__di__.get('provides'):
+			if getattr(func, '__di__', {}).get('provides'):
 				self.register_provider(func)
 
 	def register_provider(self, func):
@@ -138,7 +139,7 @@ class Injector:
 			obj = cls(**self._guess_kwargs(cls.__init__))
 
 		# extra properties defined with @di.inject
-		if hasattr(obj, '__di__') and 'inject' in obj.__di__:
+		if 'inject' in getattr(obj, '__di__', {}):
 			for prop_name, prop_type in obj.__di__['inject'].items():
 				setattr(obj, prop_name, self.get(prop_type))
 
