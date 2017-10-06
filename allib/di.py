@@ -3,6 +3,17 @@ import inspect
 import typing
 
 
+def _wrap_provider_func(func, di_props):
+	hints = typing.get_type_hints(func)
+	di_props['provides'] = hints['return']
+
+	if not hasattr(func, '__di__'):
+		func.__di__ = {}
+	func.__di__.update(di_props)
+
+	return func
+
+
 def provider(func=None, *, singleton=False):
 	"""
 	Decorator to mark a function as a provider.
@@ -17,26 +28,14 @@ def provider(func=None, *, singleton=False):
 		def myfunc() -> MyClass:
 			return MyClass(args)
 	"""
-	def _add_provider_annotations(wrapper, func):
-		wrapper.__di__ = getattr(func, '__di__', {})
-		hints = typing.get_type_hints(func)
-		wrapper.__di__['provides'] = hints['return']
-		wrapper.__di__['singleton'] = singleton
+	di_props = {'singleton': singleton}
 
 	if func is None:
 		def decorator(func):
-			@functools.wraps(func)
-			def wrapper(*args, **kwargs):
-				return func(*args, **kwargs)
-			_add_provider_annotations(wrapper, func)
-			return wrapper
+			return _wrap_provider_func(func, di_props)
 		return decorator
 
-	@functools.wraps(func)
-	def wrapper(*args, **kwargs):
-		return func(*args, **kwargs)
-	_add_provider_annotations(wrapper, func)
-	return wrapper
+	return _wrap_provider_func(func, di_props)
 
 
 def inject(*args, **kwargs):
