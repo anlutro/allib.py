@@ -30,7 +30,7 @@ class ColorLogRecord(logging.LogRecord):
 	}
 
 	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+		super(ColorLogRecord, self).__init__(*args, **kwargs)
 		self.levelname_colored = '%s%s%s' % (
 			self.COLORS[self.levelno],
 			self.levelname,
