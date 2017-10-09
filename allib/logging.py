@@ -26,7 +26,8 @@ def get_formatter(colors, shortened_levels=True):
 	level_len = 5 if shortened_levels else 8
 	if colors:
 		level_len += 11
-		fmt = '\033[37m%(asctime)s %(levelname_colored)' + str(level_len) + 's\033[37m %(name)s \033[0m%(message)s'
+		fmt = '\033[37m%(asctime)s %(levelname_colored)' + str(level_len) + \
+			's\033[37m %(name)s \033[0m%(message)s'
 	else:
 		fmt = '%(asctime)s [%(levelname)' + str(level_len) + 's] [%(name)s] %(message)s'
 	return logging.Formatter(fmt)
