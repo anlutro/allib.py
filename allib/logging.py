@@ -10,7 +10,8 @@ LOG = logging.getLogger(__name__)
 class JsonFormatter(logging.Formatter):
 	DEFAULT_FIELDS = ('levelname', 'name', 'msg')
 
-	def __init__(self, fields=None):
+	def __init__(self, fields=None, datefmt=None):
+		super(JsonFormatter, self).__init__(datefmt=datefmt)
 		self.fields = tuple(fields) if fields else self.DEFAULT_FIELDS
 
 	def format(self, record):
@@ -64,13 +65,22 @@ def setup_logging(
 	colors=False,
 	shorten_levels=True,
 ):
+	startup_messages = []
+
 	# use custom log record class if we want colors
 	if colors:
-		logging.setLogRecordFactory(ColorLogRecord)
+		if hasattr(logging, 'setLogRecordFactory'):
+			logging.setLogRecordFactory(ColorLogRecord) #pylint: disable=no-member
+		else:
+			startup_messages.append((
+				logging.WARNING,
+				'color logging not supported in python2, sorry',
+			))
+			colors = False
 
 	# shorten long level names
 	if shorten_levels:
-		# pylint: disable=no-member
+		#pylint: disable=no-member,protected-access
 		if hasattr(logging, '_levelNames'):
 			# python 2.7, 3.3
 			logging._levelNames[logging.WARNING] = 'WARN'
@@ -83,7 +93,7 @@ def setup_logging(
 			logging._nameToLevel['WARN'] = logging.WARNING
 			logging._levelToName[logging.CRITICAL] = 'CRIT'
 			logging._nameToLevel['CRIT'] = logging.CRITICAL
-		# pylint: enable=no-member
+		#pylint: enable=no-member,protected-access
 
 	if log_level is None:
 		log_level = logging.WARNING
@@ -117,8 +127,11 @@ def setup_logging(
 
 	# add the logging handler for all loggers
 	root.addHandler(handler)
-
-	LOG.info('set up log handler %r to %s with level %s', handler, log_file, log_level)
+	startup_messages.append((
+		logging.INFO,
+		'set up log handler %r to %s with level %s',
+		handler, log_file, log_level,
+	))
 
 	# if logging to a file but the application is ran through an interactive
 	# shell, also log to STDERR
@@ -128,7 +141,18 @@ def setup_logging(
 			formatter = get_formatter(colors=colors, shortened_levels=shorten_levels)
 			console_handler.setFormatter(formatter)
 			root.addHandler(console_handler)
-			LOG.info('set up log handler %r to STDERR with level %s',
-				console_handler, log_level)
+			startup_messages.append((
+				logging.INFO,
+				'set up log handler %r to STDERR with level %s',
+				console_handler, log_level,
+			))
 		else:
-			LOG.info('sys.stderr is not a TTY, not logging to it')
+			startup_messages.append((
+				logging.INFO,
+				'sys.stderr is not a TTY, not logging to it',
+			))
+
+	for line in startup_messages:
+		level, message = line[:2]
+		args = line[2:]
+		LOG.log(level, message, *args)
