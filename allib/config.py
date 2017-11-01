@@ -2,9 +2,9 @@ from __future__ import absolute_import
 import copy
 
 
-_STR_TYPES = [str, bytes]
+_STR_TYPES = (str, bytes)
 try:
-	_STR_TYPES.append(unicode) #pylint: disable=undefined-variable
+	_STR_TYPES += (unicode,) #pylint: disable=undefined-variable
 except NameError:
 	pass
 
