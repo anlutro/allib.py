@@ -92,11 +92,11 @@ def test_provider_dependencies():
 	assert 'a' == b.a.name
 
 
-def test_module():
-	class TestModule(di.Module):
+def test_plugin():
+	class TestPlugin(di.Plugin):
 		@di.provider
 		def f(self) -> str:
 			return 'foo'
 	i = di.Injector()
-	i.register_module(TestModule())
+	i.register_plugin(TestPlugin())
 	assert 'foo' == i.get(str)

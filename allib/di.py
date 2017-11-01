@@ -67,9 +67,9 @@ def inject_object(obj, var_name, var_type):
 	return obj
 
 
-class Module:
+class Plugin:
 	"""
-	A module is a collection of providers.
+	A plugin is a collection of providers.
 	"""
 	pass
 
@@ -82,22 +82,20 @@ class Injector:
 		self.instances = {}
 		self.factories = {}
 
-	def register_module(self, module: Module):
+	def register_plugin(self, plugin: Plugin):
 		"""
-		Register a module.
+		Register a plugin.
 		"""
-		if inspect.isclass(module):
-			module = self.get(module)
-		if isinstance(module, Module):
-			funcs = (
-				item[1] for item in
-				inspect.getmembers(module, predicate=inspect.ismethod)
-			)
-		else:
-			raise Exception("Don't know how to register module: %r" % module)
-		for func in funcs:
-			if getattr(func, '__di__', {}).get('provides'):
-				self.register_provider(func)
+		if inspect.isclass(plugin):
+			plugin = self.get(plugin)
+
+		if not isinstance(plugin, Plugin):
+			raise Exception("Don't know how to register plugin: %r" % plugin)
+
+		methods = inspect.getmembers(plugin, predicate=inspect.ismethod)
+		for _, method in methods:
+			if getattr(method, '__di__', {}).get('provides'):
+				self.register_provider(method)
 
 	def register_provider(self, func):
 		"""
@@ -126,7 +124,7 @@ class Injector:
 		elif callable(thing):
 			return thing(**self._guess_kwargs(thing))
 
-		raise Exception('not sure what thing is: %r' % thing)
+		raise Exception('cannot resolve: %r' % thing)
 
 	def _call_class_init(self, cls):
 		# if this statement is true, the class or its parent class(es) does not
