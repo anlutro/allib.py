@@ -1,7 +1,7 @@
 def get_fn_argnames(func):
-	'''
+	"""
 	Given a function, find its argument and keyword argument names.
-	'''
+	"""
 	arg_count = func.__code__.co_argcount
 	kwarg_count = 0
 	if func.__defaults__:

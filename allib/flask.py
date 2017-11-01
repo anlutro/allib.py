@@ -15,7 +15,7 @@ def transform_filename(static_dir, orig_filename, bust_extensions):
 	return orig_filename
 
 
-def cache_busting_url_defaults_factory(app, bust_extensions): # pylint: disable=invalid-name
+def cache_busting_url_defaults_factory(app, bust_extensions): #pylint: disable=invalid-name
 	# keep a dict of rewritten URLs to prevent a `stat` every time url_for is
 	# called on a static file.
 	url_cache = {}
@@ -39,18 +39,18 @@ def cache_busting_url_defaults_factory(app, bust_extensions): # pylint: disable=
 
 
 def setup_cache_busting(app, bust_extensions=True):
-	'''
+	"""
 	Extend Flask's URL resolver to support cache busting of static files.
 	Requires that you have your web server set up to rewrite these URLs,
 	i.e. "foo.12345678.css" should be rewritten to "foo.css". Example:
 
 	setup_cache_busting(app, app.config['CACHE_BUST_URLS'])
-	'''
+	"""
 	app.url_defaults(cache_busting_url_defaults_factory(app, bust_extensions))
 
 
 def cache_busting_url_for(app, old_url_for, bust_extensions=True):
-	'''
+	"""
 	Replace flask's url_for with one that supports cache busting of static
 	files. Requires that you have your web server set up to rewrite these URLs,
 	i.e. "foo.12345678.css" should be rewritten to "foo.css". Example:
@@ -58,7 +58,7 @@ def cache_busting_url_for(app, old_url_for, bust_extensions=True):
 	flask.url_for = cache_busting_url_for(
 		app, flask.url_for, app.config['CACHE_BUST_URLS']
 	)
-	'''
+	"""
 
 	if not bust_extensions:
 		return old_url_for

@@ -71,9 +71,9 @@ def _str_to_type(value, valid_type):
 
 
 def configparser_to_dict(config, defaults=None, types=None):
-	'''
+	"""
 	Transform a configparser object into a dictionary.
-	'''
+	"""
 	confdict = copy.deepcopy(defaults) if defaults else {}
 
 	for section in config.sections():
@@ -91,14 +91,14 @@ def configparser_to_dict(config, defaults=None, types=None):
 
 
 def get_config(args, default_location, defaults=None, types=None):
-	'''
+	"""
 	args: An object returned from argparse.ArgumentParser.parse_args()
 	default_location: Path to config file if not specified in `args`
 	defaults: Either a dictionary of default configuration values, or a function
 	  that will be invoked as `defaults(config, args)` after the initial
 	  dictionary has been constructed.
 	types: A dictionary of types to validate the config against.
-	'''
+	"""
 	path = args.config or default_location
 
 	if path.endswith('.yml') or path.endswith('.yaml'):

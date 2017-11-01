@@ -8,12 +8,12 @@ LOG = logging.getLogger(__name__)
 
 
 class SubprocessError(Exception):
-	'''Copy-pasted from python 3.5'''
+	"""Copy-pasted from python 3.5"""
 	pass
 
 
 class CalledProcessError(SubprocessError):
-	'''Copy-pasted from python 3.5'''
+	"""Copy-pasted from python 3.5"""
 	def __init__(self, returncode, cmd, output=None, stderr=None):
 		self.returncode = returncode
 		self.cmd = cmd
@@ -29,7 +29,7 @@ class CalledProcessError(SubprocessError):
 
 
 class TimeoutExpired(SubprocessError):
-	'''Copy-pasted from python 3.5'''
+	"""Copy-pasted from python 3.5"""
 	def __init__(self, cmd, timeout, output=None, stderr=None):
 		self.cmd = cmd
 		self.timeout = timeout
@@ -45,10 +45,10 @@ class TimeoutExpired(SubprocessError):
 
 
 class CompletedProcess(object):
-	'''
+	"""
 	This class mirrors python 3.5's subprocess.CompletedProcess, with some
 	added properties.
-	'''
+	"""
 	def __init__(self, args, returncode, stdout=None, stderr=None):
 		self.args = args
 		self.returncode = returncode
@@ -72,7 +72,7 @@ class CompletedProcess(object):
 
 
 def popen(command, env=None, copy_env=True, **kwargs):
-	'''Wrapper around subprocess.Popen.'''
+	"""Wrapper around subprocess.Popen."""
 	proc_env = os.environ if copy_env else {}
 	if env:
 		proc_env.update(env)
@@ -89,12 +89,12 @@ def popen(command, env=None, copy_env=True, **kwargs):
 
 
 def get_result(proc, timeout=None, check=False, input=None):
-	'''Get a CompletedProcess object from a subprocess.Popen.'''
+	"""Get a CompletedProcess object from a subprocess.Popen."""
 	try:
 		stdout, stderr = proc.communicate(input, timeout=timeout)
 	# this except is copied from python's subprocess.run, I don't really
 	# get the point of it but whatever
-	except subprocess.TimeoutExpired: # pylint: disable=no-member
+	except subprocess.TimeoutExpired: #pylint: disable=no-member
 		proc.kill()
 		stdout, stderr = proc.communicate()
 		raise TimeoutExpired(
@@ -120,7 +120,7 @@ def get_result(proc, timeout=None, check=False, input=None):
 
 
 def run(command, timeout=None, check=False, input=None, **kwargs):
-	'''This function sort of mirrors python 3.5's subprocess.run.'''
+	"""This function sort of mirrors python 3.5's subprocess.run."""
 	if isinstance(command, str):
 		command = shlex.split(command)
 
