@@ -1,3 +1,6 @@
+from .spec import ValueOption
+
+
 def add_value(add_to, item, value):
 	value = item.type(value)
 	if item.multiple:
@@ -44,13 +47,18 @@ def parse_from_spec(spec, args):
 		arg = args[i]
 
 		if arg.startswith('-'):
+			value = None
 			if '=' in arg:
 				flag, value = arg.split('=', 1)
 			else:
 				flag = args[i]
-				value = args[i + 1]
-				i += 1
 			option = spec.option_map[flag]
+			if isinstance(option, ValueOption):
+				if not value:
+					value = args[i + 1]
+					i += 1
+			else:
+				value = True
 			add_value(result.options, option, value)
 		else:
 			argument = spec.arguments[argument_i]

@@ -18,10 +18,32 @@ def parse_args(args, options=None, arguments=None):
 	).parse_args(args)
 
 
-def test_parse():
+def _parse_parameters():
+	args = []
+	file_variations = (
+		['--file', '/etc/motd'],
+		['-f', '/etc/motd'],
+		['--file=/etc/motd'],
+		['-f=/etc/motd'],
+	)
+	for verbose in ('prepend', 'no', 'append'):
+		for stuff in ('prepend', 'append'):
+			for variation in file_variations:
+				args.append(
+					(['--verbose'] if verbose == 'prepend' else []) +
+					(['stuff'] if stuff == 'prepend' else []) +
+					variation +
+					(['--verbose'] if verbose == 'append' else []) +
+					(['stuff'] if stuff == 'append' else [])
+				)
+	return args
+
+
+@pytest.mark.parametrize('args', _parse_parameters())
+def test_parse(args):
 	ret = parse_args(
-		['stuff', '-f', '/etc/motd'],
-		[spec.ValueOption('--file')],
+		args,
+		[spec.Option('--verbose'), spec.ValueOption('--file')],
 		[spec.Argument('name')],
 	)
 	assert '/etc/motd' == ret['file']

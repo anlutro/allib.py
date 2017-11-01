@@ -32,7 +32,7 @@ class ValueOption(Option):
 
 
 class ArgumentSpec:
-	def __init__(self, options, arguments):
+	def __init__(self, options=[], arguments=[]):
 		self.options = []
 		self.option_map = {}
 		self.arguments = []
