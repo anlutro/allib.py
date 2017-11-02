@@ -48,20 +48,19 @@ def _validate_dict(confdict, types, prefix=None):
 
 
 def _str_to_type(value, valid_type):
-	value_l = value.lower()
+	if valid_type is bool:
+		raise ValueError("_str_to_type shouldn't be guessing booleans!")
+
 	if valid_type is int or valid_type is float:
 		try:
-			value = valid_type(value)
+			return valid_type(value)
 		except ValueError:
-			pass
-	elif valid_type is bool:
-		if value_l in ('1', 'true', 'yes'):
-			value = True
-		elif value_l in ('', '0', 'false', 'no'):
-			value = False
-	elif valid_type is list:
-		value = [v.strip() for v in str(value).split(',')]
-	elif valid_type is dict:
+			return value
+
+	if valid_type is list or valid_type is tuple or valid_type is set:
+		return valid_type(v.strip() for v in str(value).split(','))
+
+	if valid_type is dict:
 		pairs = [v.strip().split(':') for v in str(value).split(',')]
 		value = {}
 		for key, value in pairs:
@@ -82,7 +81,9 @@ def configparser_to_dict(config, defaults=None, types=None):
 			valid_type = None
 			if types and section in types and item in types[section]:
 				valid_type = types[section][item]
-			if valid_type:
+			if valid_type is bool:
+				value = config.getboolean(section, item)
+			elif valid_type:
 				value = _str_to_type(value, valid_type)
 				_validate_value(value, valid_type, '%s[%s]' % (section, item))
 			confdict[section][item] = value
@@ -130,11 +131,7 @@ def get_config(args, default_location, defaults=None, types=None):
 				msg += '. Specify one with the -c/--config command line option.'
 			raise ConfigError(msg)
 
-		confdict = configparser_to_dict(
-			config,
-			defaults if isinstance(defaults, dict) else None,
-			types,
-		)
+		confdict = configparser_to_dict(config, defaults, types)
 
 	if 'logging' not in confdict:
 		confdict['logging'] = {}
