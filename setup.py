@@ -3,10 +3,10 @@
 from distutils.core import setup
 from setuptools import find_packages
 import os
-import os.path
+from os.path import abspath, dirname
 
 # allow setup.py to be ran from anywhere
-os.chdir(os.path.dirname(__file__))
+os.chdir(dirname(abspath(__file__)))
 
 setup(
 	name='allib',
