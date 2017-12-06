@@ -5,7 +5,7 @@ from .spec import ArgumentSpec
 from .config import get_config
 from .argparser import parse_from_spec
 
-__all__ = ('CommandLineInterface',)
+__all__ = ('CommandLineInterface', 'ArgumentSpec')
 
 
 class CommandLineInterface:
