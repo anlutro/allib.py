@@ -40,7 +40,7 @@ def _parse_parameters():
 def test_parse(args):
 	ret = parse_args(
 		args,
-		[spec.Option('--verbose'), spec.ValueOption('--file')],
+		[spec.Option('-v', '--verbose'), spec.ValueOption('-f', '--file')],
 		[spec.Argument('name')],
 	)
 	assert '/etc/motd' == ret['file']
@@ -51,8 +51,8 @@ def test_type():
 	ret = parse_args(
 		['-i', '1', '-f', '1.5'],
 		[
-			spec.ValueOption('--int', type=int),
-			spec.ValueOption('--float', type=float),
+			spec.ValueOption('-i', '--int', type=int),
+			spec.ValueOption('-f', '--float', type=float),
 		],
 	)
 	assert 1 == ret['int']
@@ -62,7 +62,7 @@ def test_type():
 def test_mutliple():
 	ret = parse_args(
 		['-v', '1', '-v', '2'],
-		[spec.ValueOption('--value', multiple=True, type=int)],
+		[spec.ValueOption('-v', '--value', multiple=True, type=int)],
 	)
 	assert 2 == len(ret['value'])
 	assert [1, 2] == ret['value']
