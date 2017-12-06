@@ -91,54 +91,62 @@ def configparser_to_dict(config, defaults=None, types=None):
 	return confdict
 
 
-def get_config(args, default_location, defaults=None, types=None):
+def get_config(args, default_location=None, optional=True, defaults=None, types=None):
 	"""
-	args: An object returned from argparse.ArgumentParser.parse_args()
+	args: An dict of command-line options
 	default_location: Path to config file if not specified in `args`
 	defaults: Either a dictionary of default configuration values, or a function
 	  that will be invoked as `defaults(config, args)` after the initial
 	  dictionary has been constructed.
 	types: A dictionary of types to validate the config against.
 	"""
-	path = args.config or default_location
+	path = args.get('config') or default_location
 
-	if path.endswith('.yml') or path.endswith('.yaml'):
-		import yaml
-		with open(path) as file:
-			confdict = yaml.safe_load(file)
-		if defaults:
-			_merge_defaults(defaults, confdict)
-		if types:
-			_validate_dict(confdict, types)
-	elif path.endswith('.json'):
-		import json
-		with open(path) as file:
-			confdict = json.load(file)
-		if defaults:
-			_merge_defaults(defaults, confdict)
-		if types:
-			_validate_dict(confdict, types)
+	if path:
+		if path.endswith('.yml') or path.endswith('.yaml'):
+			import yaml
+			with open(path) as file:
+				confdict = yaml.safe_load(file)
+			if defaults:
+				_merge_defaults(defaults, confdict)
+			if types:
+				_validate_dict(confdict, types)
+		elif path.endswith('.json'):
+			import json
+			with open(path) as file:
+				confdict = json.load(file)
+			if defaults:
+				_merge_defaults(defaults, confdict)
+			if types:
+				_validate_dict(confdict, types)
+		else:
+			try:
+				import configparser
+			except ImportError:
+				import ConfigParser as configparser
+			config = configparser.ConfigParser()
+			files = config.read(path)
+			if not files:
+				msg = 'Could not find a config file at path %r' % path
+				if not args.get('config'):
+					msg += '. Specify one with the -c/--config command line option.'
+				raise ConfigError(msg)
+
+			confdict = configparser_to_dict(config, defaults, types)
 	else:
-		try:
-			import configparser
-		except ImportError:
-			import ConfigParser as configparser
-		config = configparser.ConfigParser()
-		files = config.read(path)
-		if not files:
-			msg = 'Could not find a config file at path %r' % path
-			if not args.config:
-				msg += '. Specify one with the -c/--config command line option.'
-			raise ConfigError(msg)
-
-		confdict = configparser_to_dict(config, defaults, types)
+		if not optional:
+			raise ConfigError('Configuration file required! Specify one '
+				'with the -c/--config command line option.')
+		confdict = {}
 
 	if 'logging' not in confdict:
 		confdict['logging'] = {}
-	if 'log_level' in args and args.log_level:
-		confdict['logging']['level'] = args.log_level
-	if 'log_file' in args and args.log_file:
-		confdict['logging']['file'] = args.log_file
+	if 'log_level' in args:
+		confdict['logging']['level'] = args.pop('log_level')
+	if 'log_file' in args:
+		confdict['logging']['file'] = args.pop('log_file')
+	if 'log_path' in args:
+		confdict['logging']['file'] = args.pop('log_path')
 
 	if callable(defaults):
 		defaults(confdict, args)

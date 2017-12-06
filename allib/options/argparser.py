@@ -2,7 +2,8 @@ from .spec import ValueOption
 
 
 def add_value(add_to, item, value):
-	value = item.type(value)
+	if value:
+		value = item.type(value)
 	if item.multiple:
 		if item not in add_to:
 			add_to[item] = []
@@ -42,6 +43,9 @@ def parse_from_spec(spec, args):
 	i = 0
 	argument_i = 0
 	result = ParseResult()
+
+	for option in spec.options:
+		add_value(result.options, option, option.default)
 
 	while i < arglen:
 		arg = args[i]

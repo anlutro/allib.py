@@ -1,21 +1,18 @@
 import pytest
-from allib import arg
-from allib.arg import spec
+from allib.options.argparser import parse_from_spec
+from allib.options import spec
 
 
-def get_cli(options=None, arguments=None):
-	argspec = spec.ArgumentSpec(
+def get_spec(options=None, arguments=None):
+	return spec.ArgumentSpec(
 		options=options or [],
 		arguments=arguments or [],
 	)
-	return arg.CommandLineInterface(argspec)
 
 
 def parse_args(args, options=None, arguments=None):
-	return get_cli(
-		options=options,
-		arguments=arguments,
-	).parse_args(args)
+	argspec = get_spec(options, arguments)
+	return parse_from_spec(argspec, args)
 
 
 def _parse_parameters():
@@ -72,15 +69,15 @@ def test_mutliple():
 
 
 def test_choices():
-	cli = get_cli(
+	argspec = get_spec(
 		arguments=[spec.Argument('name', choices=('foobar', 'barbaz', 'bazfoo'))]
 	)
 
-	ret = cli.parse_args(['foo'])
+	ret = parse_from_spec(argspec, ['foo'])
 	assert ret['name'] == 'foobar'
 
-	ret = cli.parse_args(['bar'])
+	ret = parse_from_spec(argspec, ['bar'])
 	assert ret['name'] == 'barbaz'
 
 	with pytest.raises(ValueError):
-		ret = cli.parse_args(['ba'])
+		ret = parse_from_spec(argspec, ['ba'])

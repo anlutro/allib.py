@@ -2,8 +2,16 @@ def guess_short_flag(long_flag):
 	return '-' + long_flag.lstrip('-')[0]
 
 
-def guess_name(long_flag):
-	return long_flag.strip('-').replace('-', '_')
+def find_long_flag(flags):
+	for flag in flags:
+		if flag.startswith('--'):
+			return flag
+
+
+def guess_name(flags):
+	flag = find_long_flag(flags)
+	if flag:
+		return flag.lstrip('-').replace('-', '_')
 
 
 class Argument:
@@ -16,17 +24,21 @@ class Argument:
 
 
 class Option:
-	def __init__(self, long_flag, short_flag=None, name=None):
-		self.long_flag = long_flag
-		self.short_flag = short_flag or guess_short_flag(long_flag)
-		self.name = name or guess_name(long_flag)
+	def __init__(self, *flags, name=None):
+		self.flags = set(flags)
+		self.name = name or guess_name(flags)
+		self.default = False
 		self.type = bool
 		self.multiple = False
 
+	def __repr__(self):
+		return '<Option "%s" %r>' % (self.name, self.flags)
+
 
 class ValueOption(Option):
-	def __init__(self, long_flag, short_flag=None, name=None, type=str, multiple=False):
-		super().__init__(long_flag=long_flag, short_flag=short_flag, name=name)
+	def __init__(self, *flags, name=None, default=None, type=str, multiple=False):
+		super().__init__(*flags, name=name)
+		self.default = default
 		self.type = type
 		self.multiple = multiple
 
@@ -51,12 +63,11 @@ class ArgumentSpec:
 
 	def add_option(self, option: Option):
 		self.options.append(option)
-		for flag in (option.short_flag, option.long_flag):
+		for flag in option.flags:
 			if flag in self.option_map:
-				exc_msg = "flag %r already taken by %r" % (
+				raise ValueError("flag %r already taken by %r" % (
 					flag, self.option_map[flag]
-				)
-				raise ValueError(exc_msg)
+				))
 			self.option_map[flag] = option
 
 	def add_argument(self, argument: Argument):
