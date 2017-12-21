@@ -43,15 +43,26 @@ class ValueOption(Option):
 		self.multiple = multiple
 
 
+def _flatten(items):
+	for item in items:
+		if item is None:
+			continue
+		else:
+			try:
+				for subitem in item:
+					yield subitem
+			except TypeError:
+				yield item
+
+
 class ArgumentSpec:
-	def __init__(self, options=[], arguments=[]):
+	def __init__(self, *opts_or_args):
 		self.options = []
 		self.option_map = {}
 		self.arguments = []
-		for option in options:
-			self.add_option(option)
-		for argument in arguments:
-			self.add_argument(argument)
+
+		for opt_or_arg in _flatten(opts_or_args):
+			self.add(opt_or_arg)
 
 	def add(self, item):
 		if isinstance(item, Option):
@@ -59,7 +70,7 @@ class ArgumentSpec:
 		elif isinstance(item, Argument):
 			self.add_argument(item)
 		else:
-			raise TypeError('can only add Option or Argument')
+			raise TypeError('can only add Option or Argument, not %r' % type(item))
 
 	def add_option(self, option: Option):
 		self.options.append(option)

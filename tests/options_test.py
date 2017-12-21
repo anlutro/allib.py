@@ -3,11 +3,8 @@ from allib.options.argparser import parse_from_spec
 from allib.options import spec
 
 
-def get_spec(options=None, arguments=None):
-	return spec.ArgumentSpec(
-		options=options or [],
-		arguments=arguments or [],
-	)
+def get_spec(*opts_or_args):
+	return spec.ArgumentSpec(*opts_or_args)
 
 
 def parse_args(args, options=None, arguments=None):
@@ -70,7 +67,7 @@ def test_mutliple():
 
 def test_choices():
 	argspec = get_spec(
-		arguments=[spec.Argument('name', choices=('foobar', 'barbaz', 'bazfoo'))]
+		spec.Argument('name', choices=('foobar', 'barbaz', 'bazfoo'))
 	)
 
 	ret = parse_from_spec(argspec, ['foo'])
