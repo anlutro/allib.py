@@ -48,10 +48,14 @@ def parse_from_spec(spec, args):
 	for option in spec.options:
 		add_value(result.options, option, option.default, is_default=True)
 
+	no_more_options = False
+
 	while i < arglen:
 		arg = args[i]
 
-		if arg.startswith('-'):
+		if arg == '--':
+			no_more_options = True
+		elif arg.startswith('-') and not no_more_options:
 			value = None
 			if '=' in arg:
 				flag, value = arg.split('=', 1)

@@ -81,3 +81,13 @@ def test_choices():
 
 	with pytest.raises(ValueError):
 		ret = parse_from_spec(argspec, ['ba'])
+
+
+def test_force_stop_parsing_options():
+	ret = parse_args(
+		['--', '--foo'],
+		[spec.Option('--foo')],
+		[spec.Argument('name')],
+	)
+	assert False is ret['foo']
+	assert '--foo' == ret['name']
