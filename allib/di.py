@@ -1,5 +1,5 @@
 import inspect
-import typing #pylint: ignore=import-error
+import typing #pylint: disable=import-error
 
 
 def _wrap_provider_func(func, di_props):
