@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import allib.logging
+from allib.logging import LogSetup
 import argparse
 import logging
 log = logging.getLogger('scripts.log')
@@ -7,16 +7,18 @@ log = logging.getLogger('scripts.log')
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-c', '--colors', action='store_true')
+	parser.add_argument('-f', '--log-file')
+	parser.add_argument('--file-level')
+	parser.add_argument('--console-level')
 	parser.add_argument('-j', '--json', action='store_true')
 	parser.add_argument('-l', '--long-levels', action='store_true')
 	args = parser.parse_args()
 
-	allib.logging.setup_logging(
-		log_level=logging.DEBUG,
-		colors=args.colors,
-		json=args.json,
-		shorten_levels=not args.long_levels,
-	)
+	ls = LogSetup(shorten_levels=not args.long_levels)
+	ls.add_file(args.log_file, args.file_level)
+	ls.add_console(args.console_level)
+	ls.finish()
+
 	log.debug('debug test msg')
 	log.info('info test msg')
 	log.warning('warning test msg')
