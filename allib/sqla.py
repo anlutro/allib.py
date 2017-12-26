@@ -61,15 +61,42 @@ class Paginator(object):
 			'links': links
 		}
 
-	def html_link_for(self, page):
+	def get_page_html(self, page):
 		return '<a href="{}"{}>{}</a>'.format(
 			self.url_for(page),
 			' class="active"' if self.page == page else '',
 			page
 		)
 
+	def get_pages_html(self):
+		# only show less pagination if there are more pages than this
+		if self.last_page <= 9:
+			return [self.get_page_html(page) for page in self.pages]
+
+		# show more pages around the current page if the current page is
+		# close to the first/last page
+		buf = 2 if self.page <= 3 or self.last_page - self.page <= 3 else 1
+		show_pages = set(
+			# first 2 pages
+			list(range(1, 3)) +
+			# last 2 pages
+			list(range(self.last_page - 1, self.last_page + 1)) +
+			# pages around current page
+			list(range(self.page - buf, self.page + buf + 1))
+		)
+		parts = []
+		prev_page = 0
+		for page in self.pages:
+			if page not in show_pages:
+				continue
+			if page - prev_page > 1:
+				parts.append('<span>...</span>')
+			parts.append(self.get_page_html(page))
+			prev_page = page
+		return parts
+
 	def render_html(self):
-		pages_html = ''.join([self.html_link_for(page) for page in self.pages])
+		pages_html = ''.join(self.get_pages_html())
 
 		# figure out the range of items we're currently browsing
 		start = self.per_page * (self.page - 1) + 1
@@ -85,3 +112,6 @@ class Paginator(object):
 		).format(
 			item_range, self.total_count, pages_html
 		)
+
+	def __str__(self):
+		return self.render_html()
