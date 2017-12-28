@@ -28,8 +28,8 @@ def test_app_url_defaults():
 	setup_cache_busting(app)
 	stat_result = mock.Mock()
 	stat_result.st_mtime = 1234.0
-	with mock.patch('os.path.isfile', return_value=True) as isfile, \
-	     mock.patch('os.stat', return_value=stat_result) as stat, \
+	with mock.patch('os.path.isfile', return_value=True), \
+	     mock.patch('os.stat', return_value=stat_result), \
 	     app.test_request_context():
 		url = flask.url_for('static', filename='file.css')
 	assert '/static/file.1234.css' == url

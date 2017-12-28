@@ -10,7 +10,7 @@ os.chdir(dirname(abspath(__file__)))
 
 setup(
 	name='allib',
-	version='0.3.2',
+	version='1.0',
 	license='MIT',
 	description='Personal library of useful stuff.',
 	author='Andreas Lutro',
