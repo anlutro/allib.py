@@ -9,12 +9,15 @@ except ImportError:
 
 
 class Paginator(object):
-	PER_PAGE = 50
-	PAGE_QS = 'p'
+	per_page = 50
+	page_qs = 'p'
 
 	def __init__(self, query, page, url, per_page=None, page_qs=None):
-		self.per_page = self.PER_PAGE if per_page is None else per_page
-		self.page_qs = self.PAGE_QS if page_qs is None else page_qs
+		if per_page is not None:
+			self.per_page = per_page
+		if page_qs is not None:
+			self.page_qs = page_qs
+
 		self.total_count = query.count()
 		page = int(page)
 		if page > 1:
