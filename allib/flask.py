@@ -7,8 +7,11 @@ def transform_filename(static_dir, orig_filename, bust_extensions):
 	if os.path.isfile(file_path):
 		directory, filename = os.path.split(orig_filename)
 		filename, extension = filename.split('.', 1)
-		if bust_extensions is True or extension in bust_extensions or \
-				extension.split('.')[-1] in bust_extensions:
+		if (
+			bust_extensions is True or
+			extension in bust_extensions or
+			extension.split('.')[-1] in bust_extensions
+		):
 			timestamp = int(os.stat(file_path).st_mtime)
 			filename = '{}.{}.{}'.format(filename, timestamp, extension)
 			return os.path.join(directory, filename)

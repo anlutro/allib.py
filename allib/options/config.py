@@ -137,8 +137,10 @@ def get_config(args, default_location=None, optional=True, defaults=None, types=
 			confdict = configparser_to_dict(config, defaults, types)
 	else:
 		if not optional:
-			raise ConfigError('Configuration file required! Specify one '
-				'with the -c/--config command line option.')
+			raise ConfigError(
+				'Configuration file required! Specify one '
+				'with the -c/--config command line option.'
+			)
 		confdict = {}
 
 	if 'logging' not in confdict:

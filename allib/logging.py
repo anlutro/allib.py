@@ -36,8 +36,9 @@ def get_formatter(colors, shortened_levels=True):
 
 class ColorLogRecord(logging.LogRecord):
 	RESET = '\033[0m'
-
-	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = ('\033[1;%dm' % (i + 30) for i in range(8))
+	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = (
+		'\033[1;%dm' % (i + 30) for i in range(8)
+	)
 
 	COLORS = {
 		logging.DEBUG: GREEN,

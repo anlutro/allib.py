@@ -119,7 +119,13 @@ def get_result(proc, timeout=None, check=False, input=None): #pylint: disable=re
 	)
 
 
-def run(command, timeout=None, check=False, input=None, **kwargs): #pylint: disable=redefined-builtin
+def run(
+	command,
+	timeout=None,
+	check=False,
+	input=None, #pylint: disable=redefined-builtin
+	**kwargs
+):
 	"""This function sort of mirrors python 3.5's subprocess.run."""
 	if isinstance(command, str):
 		command = shlex.split(command)
