@@ -197,7 +197,7 @@ class LogSetup:
 		if self._finished:
 			raise RuntimeError('cannot add handler, logging already set up')
 
-		if check_interactive and not sys.__stderr__.isatty():
+		if check_interactive and not sys.__stderr__.isatty(): #pylint: disable=no-member
 			self.add_startup_message(
 				logging.INFO,
 				'sys.stderr is not a TTY, not logging to it',

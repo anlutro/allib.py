@@ -91,6 +91,22 @@ def configparser_to_dict(config, defaults=None, types=None):
 	return confdict
 
 
+def _get_json_yaml_config(path, defaults, types):
+	if path.endswith('.yml') or path.endswith('.yaml'):
+		import yaml
+		load = yaml.safe_load
+	elif path.endswith('.json'):
+		import json
+		load = json.load
+	with open(path) as file:
+		confdict = load(file)
+	if defaults:
+		_merge_defaults(defaults, confdict)
+	if types:
+		_validate_dict(confdict, types)
+	return confdict
+
+
 def get_config(args, default_location=None, optional=True, defaults=None, types=None):
 	"""
 	args: An dict of command-line options
@@ -103,22 +119,8 @@ def get_config(args, default_location=None, optional=True, defaults=None, types=
 	path = args.get('config') or default_location
 
 	if path:
-		if path.endswith('.yml') or path.endswith('.yaml'):
-			import yaml
-			with open(path) as file:
-				confdict = yaml.safe_load(file)
-			if defaults:
-				_merge_defaults(defaults, confdict)
-			if types:
-				_validate_dict(confdict, types)
-		elif path.endswith('.json'):
-			import json
-			with open(path) as file:
-				confdict = json.load(file)
-			if defaults:
-				_merge_defaults(defaults, confdict)
-			if types:
-				_validate_dict(confdict, types)
+		if path.endswith(('.yml', '.yaml', '.json')):
+			confdict = _get_json_yaml_config(path, defaults, types)
 		else:
 			try:
 				import configparser
