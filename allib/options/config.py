@@ -63,8 +63,8 @@ def _str_to_type(value, valid_type):
 	if valid_type is dict:
 		pairs = [v.strip().split(':') for v in str(value).split(',')]
 		value = {}
-		for key, value in pairs:
-			value[key.strip()] = value.strip()
+		for key, val in pairs:
+			value[key.strip()] = val.strip()
 
 	return value
 
@@ -96,8 +96,8 @@ def get_config(args, default_location=None, optional=True, defaults=None, types=
 	args: An dict of command-line options
 	default_location: Path to config file if not specified in `args`
 	defaults: Either a dictionary of default configuration values, or a function
-	  that will be invoked as `defaults(config, args)` after the initial
-	  dictionary has been constructed.
+		that will be invoked as `defaults(config, args)` after the initial
+		dictionary has been constructed.
 	types: A dictionary of types to validate the config against.
 	"""
 	path = args.get('config') or default_location

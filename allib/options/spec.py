@@ -6,12 +6,14 @@ def find_long_flag(flags):
 	for flag in flags:
 		if flag.startswith('--'):
 			return flag
+	return None
 
 
 def guess_name(flags):
 	flag = find_long_flag(flags)
 	if flag:
 		return flag.lstrip('-').replace('-', '_')
+	return None
 
 
 class Argument:

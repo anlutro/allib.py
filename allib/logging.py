@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import json
+from json import dumps as json_dumps
 import logging
 import logging.handlers
 import sys
@@ -20,7 +20,7 @@ class JsonFormatter(logging.Formatter):
 			if key in self.fields:
 				data[key] = getattr(record, key)
 		data['time'] = self.formatTime(record)
-		return json.dumps(data)
+		return json_dumps(data)
 
 
 def get_formatter(colors, shortened_levels=True):
@@ -238,6 +238,6 @@ def setup_logging(
 ):
 	log_setup = LogSetup(default_level=log_level, colors=colors, shorten_levels=shorten_levels)
 	log_setup.add_file(log_file or 'stderr', json=json, json_fields=json_fields)
-	if log_file and log_level.lower() not in ('stderr', 'stdout'):
-		log_setup.add_console(check_interactive=True)
+	if log_file and log_file.lower() not in ('stderr', 'stdout'):
+		log_setup.add_console(check_interactive=check_interactive)
 	log_setup.finish()
