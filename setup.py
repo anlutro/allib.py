@@ -13,6 +13,9 @@ setup(
 	version='1.0',
 	license='MIT',
 	description='Personal library of useful stuff.',
+	long_description=("Collection of modules that I personally find useful. "
+		"You probably don't want to add it to your requirements, but feel free "
+		"to copy-paste code from the Github source code."),
 	author='Andreas Lutro',
 	author_email='anlutro@gmail.com',
 	url='https://github.com/anlutro/allib.py',
@@ -28,4 +31,5 @@ setup(
 		'Programming Language :: Python :: 3.6',
 		'Programming Language :: Python :: 3.7',
 	],
+	keywords=['personal', 'library', 'utils'],
 )
