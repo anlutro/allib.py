@@ -1,6 +1,8 @@
+pyyaml
+flask
+
 pytest
 pytest-cov
 pytest-pythonpath
-pylint
-pyyaml
-flask
+
+prospector[with_pyroma]
