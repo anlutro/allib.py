@@ -9,9 +9,6 @@ import werkzeug.wrappers
 
 from allib import di
 
-# these imports are so that people can "import X from framework"
-from werkzeug.wrappers import Response, Request #pylint: enable=ungrouped-imports
-
 log = logging.getLogger(__name__)
 
 
@@ -33,12 +30,18 @@ def _lazy_import(string):
 		raise ImportError('Module %r does not have an attribute %r' % (mod_string, attr_string))
 
 
-class JsonResponse(werkzeug.wrappers.Response):
+class Request(werkzeug.wrappers.Request):
+	pass
+
+
+class Response(werkzeug.wrappers.Response):
+	pass
+
+
+class JsonResponse(Response):
 	def __init__(self, response, *args, **kwargs):
 		kwargs.setdefault('mimetype', 'application/json')
-		werkzeug.wrappers.Response.__init__(
-			self, (json.dumps(response), '\n'), *args, **kwargs
-		)
+		super().__init__((json.dumps(response), '\n'), *args, **kwargs)
 
 
 class Config(dict):
@@ -46,10 +49,9 @@ class Config(dict):
 
 
 class Application:
-	def __init__(self, name, debug=False, autoreload=None):
+	def __init__(self, name, debug=False):
 		self.name = name
 		self.debug = debug
-		self.autoreload = debug if autoreload is None else autoreload
 		self.url_map = werkzeug.routing.Map()
 		self.config = Config({'debug': self.debug})
 
@@ -84,7 +86,7 @@ class Application:
 			self.add_route(methods=route[0], path=route[1], view=route[2])
 
 	def wsgi_app(self, environ, start_response):
-		request = werkzeug.wrappers.Request(environ)
+		request = Request(environ)
 		response = self.dispatch_request(request)
 		return response(environ, start_response)
 
@@ -113,13 +115,13 @@ class Application:
 			return exc
 
 		if isinstance(response, str):
-			response = werkzeug.wrappers.Response(response)
+			response = Response(response)
 
 		return response
 
 	def run(self, host, port):
 		from werkzeug.serving import run_simple
-		run_simple(host, port, self.wsgi_app, self.debug, self.autoreload)
+		run_simple(host, port, self.wsgi_app, self.debug, autoreload=self.debug)
 
 	def cli(self):
 		import argparse
