@@ -17,4 +17,15 @@ setup(
 	author_email='anlutro@gmail.com',
 	url='https://github.com/anlutro/allib.py',
 	packages=find_packages(include=('allib', 'allib.*')),
+	classifiers=[
+		'Development Status :: 4 - Beta',
+		'Intended Audience :: Developers',
+		'Operating System :: POSIX',
+		'Programming Language :: Python',
+		'Programming Language :: Python :: 2.7',
+		'Programming Language :: Python :: 3.4',
+		'Programming Language :: Python :: 3.5',
+		'Programming Language :: Python :: 3.6',
+		'Programming Language :: Python :: 3.7',
+	],
 )
