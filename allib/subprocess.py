@@ -88,7 +88,7 @@ def popen(command, env=None, copy_env=True, **kwargs):
 	)
 
 
-def get_result(proc, timeout=None, check=False, input=None):
+def get_result(proc, timeout=None, check=False, input=None): #pylint: disable=redefined-builtin
 	"""Get a CompletedProcess object from a subprocess.Popen."""
 	try:
 		stdout, stderr = proc.communicate(input, timeout=timeout)
@@ -119,7 +119,7 @@ def get_result(proc, timeout=None, check=False, input=None):
 	)
 
 
-def run(command, timeout=None, check=False, input=None, **kwargs):
+def run(command, timeout=None, check=False, input=None, **kwargs): #pylint: disable=redefined-builtin
 	"""This function sort of mirrors python 3.5's subprocess.run."""
 	if isinstance(command, str):
 		command = shlex.split(command)

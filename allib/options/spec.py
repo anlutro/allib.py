@@ -1,3 +1,4 @@
+
 def guess_short_flag(long_flag):
 	return '-' + long_flag.lstrip('-')[0]
 
@@ -17,7 +18,7 @@ def guess_name(flags):
 
 
 class Argument:
-	def __init__(self, name, type=str, optional=False, multiple=False, choices=None):
+	def __init__(self, name, type=str, optional=False, multiple=False, choices=None): #pylint: disable=redefined-builtin
 		self.name = name
 		self.type = type
 		self.optional = optional
@@ -38,7 +39,7 @@ class Option:
 
 
 class ValueOption(Option):
-	def __init__(self, *flags, name=None, default=None, type=str, multiple=False):
+	def __init__(self, *flags, name=None, default=None, type=str, multiple=False): #pylint: disable=redefined-builtin
 		super().__init__(*flags, name=name)
 		self.default = default
 		self.type = type
