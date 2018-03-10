@@ -108,15 +108,16 @@ class LogSetup:
 		"""
 		self.default_level = _level(default_level)
 		self.root_level = _level(root_level)
-		self.colors = colors
 		self.shorten_levels = shorten_levels
 		self.startup_messages = []
 		self.handlers = []
 		self._finished = False
 
-		if self.colors:
+		self.colors = False
+		if colors:
 			if hasattr(logging, 'setLogRecordFactory'):
 				logging.setLogRecordFactory(ColorLogRecord) #pylint: disable=no-member
+				self.colors = True
 			else:
 				self.add_startup_message(
 					logging.WARNING,
