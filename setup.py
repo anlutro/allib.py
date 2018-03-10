@@ -10,7 +10,7 @@ os.chdir(dirname(abspath(__file__)))
 
 setup(
 	name='allib',
-	version='1.0',
+	version='1.1',
 	license='MIT',
 	description='Personal library of useful stuff.',
 	long_description=("Collection of modules that I personally find useful. "
