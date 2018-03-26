@@ -75,6 +75,8 @@ def _shorten_levels():
 
 
 def _level(level):
+	if level is None:
+		return logging.NOTSET
 	if isinstance(level, (str, bytes)):
 		return logging.getLevelName(level.upper())
 	return level
@@ -92,21 +94,21 @@ class LogSetup:
 	"""
 	def __init__(
 		self,
-		default_level=logging.WARNING,
-		root_level=logging.DEBUG,
+		default_handler_level=logging.NOTSET,
+		root_level=logging.NOTSET,
 		colors=False,
 		shorten_levels=False,
 	):
 		"""
 		Args:
+			default_handler_level: Which level to set for handlers by default.
 			root_level: Which level to set on the root logger. If this is set,
 				levels lower than this will be ignored even if set on individual
-				handlers, so it's usually a good idea to leave this at DEBUG.
-			default_level: Which level to set for loggers by default.
+				handlers, so it's usually a good idea to leave this at NOTSET.
 			colors: Use colors in console logging if possible.
 			shorten_levels: Shorten long log level names.
 		"""
-		self.default_level = _level(default_level)
+		self.default_handler_level = _level(default_handler_level)
 		self.root_level = _level(root_level)
 		self.shorten_levels = shorten_levels
 		self.startup_messages = []
@@ -170,7 +172,7 @@ class LogSetup:
 		handler.setFormatter(formatter)
 
 		if level is None:
-			level = self.default_level
+			level = self.default_handler_level
 		else:
 			level = _level(level)
 		handler.setLevel(level)
@@ -215,8 +217,7 @@ class LogSetup:
 			raise RuntimeError('logging already set up')
 
 		root = logging.getLogger()
-		if self.root_level:
-			root.setLevel(self.root_level)
+		root.setLevel(self.root_level)
 
 		for handler in self.handlers:
 			root.addHandler(handler)
@@ -238,7 +239,7 @@ def setup_logging(
 	colors=False,
 	shorten_levels=True,
 ):
-	log_setup = LogSetup(default_level=log_level, colors=colors, shorten_levels=shorten_levels)
+	log_setup = LogSetup(default_handler_level=log_level, colors=colors, shorten_levels=shorten_levels)
 	log_setup.add_file(log_file or 'stderr', json=json, json_fields=json_fields)
 	if log_file and log_file.lower() not in ('stderr', 'stdout'):
 		log_setup.add_console(check_interactive=check_interactive)

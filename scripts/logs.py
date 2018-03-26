@@ -12,6 +12,7 @@ def main():
 	parser.add_argument('--console-level')
 	parser.add_argument('-j', '--json', action='store_true')
 	parser.add_argument('-l', '--long-levels', action='store_true')
+	parser.add_argument('-t', '--tree', action='store_true')
 	args = parser.parse_args()
 
 	ls = LogSetup(
@@ -32,6 +33,11 @@ def main():
 		raise Exception('test exception')
 	except:
 		log.exception('exception test msg')
+
+	if args.tree:
+		import logging_tree
+		print()
+		logging_tree.printout()
 
 if __name__ == '__main__':
 	main()
