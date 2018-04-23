@@ -24,6 +24,7 @@ def main():
 	ls.add_console(args.console_level)
 	ls.finish()
 
+	log.debug('debug test msg with extra', extra=dict(foo='bar'))
 	log.debug('debug test msg')
 	log.info('info test msg')
 	log.warning('warning test msg')

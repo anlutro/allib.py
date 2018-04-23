@@ -3,24 +3,38 @@ from json import dumps as json_dumps
 import logging
 import logging.handlers
 import sys
+import time
 
 LOG = logging.getLogger(__name__)
 
 
 class JsonFormatter(logging.Formatter):
-	DEFAULT_FIELDS = ('levelname', 'name', 'msg')
+	"""
+	Formatter for writing line-delimited JSON logs.
+	"""
+	default_fields = ('levelname', 'name', 'msg', 'isotime')
+	separators = (',', ':')
 
 	def __init__(self, fields=None, datefmt=None):
 		super(JsonFormatter, self).__init__(datefmt=datefmt)
-		self.fields = tuple(fields) if fields else self.DEFAULT_FIELDS
+		self.fields = set(fields or self.default_fields)
 
 	def format(self, record):
 		data = {}
 		for key in record.__dict__:
 			if key in self.fields:
 				data[key] = getattr(record, key)
-		data['time'] = self.formatTime(record)
-		return json_dumps(data)
+
+		if 'isotime' in self.fields:
+			data['isotime'] = time.strftime(
+				'%Y-%m-%dT%H:%M:%S%z',
+				self.converter(record.created),
+			)
+
+		if 'asctime' in self.fields:
+			data['asctime'] = self.formatTime(record)
+
+		return json_dumps(data, separators=self.separators)
 
 
 def get_formatter(colors, shortened_levels=True):
@@ -50,11 +64,11 @@ class ColorLogRecord(logging.LogRecord):
 
 	def __init__(self, *args, **kwargs):
 		super(ColorLogRecord, self).__init__(*args, **kwargs)
-		self.levelname_colored = '%s%s%s' % (
+		self.levelname_colored = ''.join((
 			self.COLORS[self.levelno],
 			self.levelname,
 			self.RESET,
-		)
+		))
 
 
 def _shorten_levels():
