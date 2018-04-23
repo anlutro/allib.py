@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import copy
+import os.path
 
 
 _STR_TYPES = (str, bytes)
@@ -69,47 +70,9 @@ def _str_to_type(value, valid_type):
 	return value
 
 
-def configparser_to_dict(config, defaults=None, types=None):
-	"""
-	Transform a configparser object into a dictionary.
-	"""
-	confdict = copy.deepcopy(defaults) if defaults else {}
-
-	for section in config.sections():
-		confdict[section] = {}
-		for item, value in config.items(section):
-			valid_type = None
-			if types and section in types and item in types[section]:
-				valid_type = types[section][item]
-			if valid_type is bool:
-				value = config.getboolean(section, item)
-			elif valid_type:
-				value = _str_to_type(value, valid_type)
-				_validate_value(value, valid_type, '%s[%s]' % (section, item))
-			confdict[section][item] = value
-
-	return confdict
-
-
-def _get_json_yaml_config(path, defaults, types):
-	if path.endswith('.yml') or path.endswith('.yaml'):
-		import yaml
-		load = yaml.safe_load
-	elif path.endswith('.json'):
-		import json
-		load = json.load
-	with open(path) as file:
-		confdict = load(file)
-	if defaults:
-		_merge_defaults(defaults, confdict)
-	if types:
-		_validate_dict(confdict, types)
-	return confdict
-
-
 def get_config(args, default_location=None, optional=True, defaults=None, types=None):
 	"""
-	args: An dict of command-line options
+	args: A dict of command-line options
 	default_location: Path to config file if not specified in `args`
 	defaults: Either a dictionary of default configuration values, or a function
 		that will be invoked as `defaults(config, args)` after the initial
@@ -118,23 +81,65 @@ def get_config(args, default_location=None, optional=True, defaults=None, types=
 	"""
 	path = args.get('config') or default_location
 
-	if path:
-		if path.endswith(('.yml', '.yaml', '.json')):
-			confdict = _get_json_yaml_config(path, defaults, types)
+	if not optional and not os.path.exists(path):
+		msg = 'Could not find a config file at path %r' % path
+		if not args.get('config'):
+			msg += '. Specify one with the -c/--config command line option.'
+		raise ConfigError(msg)
+
+	def configparser_to_dict(config):
+		"""
+		Transform a configparser object into a dictionary.
+		"""
+		confdict = copy.deepcopy(defaults) if defaults else {}
+
+		for section in config.sections():
+			confdict[section] = {}
+			for item, value in config.items(section):
+				valid_type = None
+				if types and section in types and item in types[section]:
+					valid_type = types[section][item]
+				if valid_type is bool:
+					value = config.getboolean(section, item)
+				elif valid_type:
+					value = _str_to_type(value, valid_type)
+					_validate_value(value, valid_type, '%s[%s]' % (section, item))
+				confdict[section][item] = value
+
+		return confdict
+
+	def conf_file_to_dict(path):
+		if path.endswith('.yml') or path.endswith('.yaml'):
+			import yaml
+			load = yaml.safe_load
+		elif path.endswith('.json'):
+			import json
+			load = json.load
+		elif path.endswith('.toml'):
+			import toml
+			load = toml.load
 		else:
 			try:
 				import configparser
 			except ImportError:
 				import ConfigParser as configparser
 			config = configparser.ConfigParser()
-			files = config.read(path)
-			if not files:
-				msg = 'Could not find a config file at path %r' % path
-				if not args.get('config'):
-					msg += '. Specify one with the -c/--config command line option.'
-				raise ConfigError(msg)
+			config.read(path)
+			return configparser_to_dict(config)
 
-			confdict = configparser_to_dict(config, defaults, types)
+		with open(path) as file:
+			confdict = load(file)
+		if defaults:
+			if callable(defaults):
+				defaults(confdict, args)
+			else:
+				_merge_defaults(defaults, confdict)
+		if types:
+			_validate_dict(confdict, types)
+		return confdict
+
+	if path:
+		confdict = conf_file_to_dict(path)
 	else:
 		if not optional:
 			raise ConfigError(
@@ -151,8 +156,5 @@ def get_config(args, default_location=None, optional=True, defaults=None, types=
 		confdict['logging']['file'] = args.pop('log_file')
 	if 'log_path' in args:
 		confdict['logging']['file'] = args.pop('log_path')
-
-	if callable(defaults):
-		defaults(confdict, args)
 
 	return confdict
