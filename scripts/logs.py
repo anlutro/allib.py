@@ -20,7 +20,7 @@ def main():
 		colors=args.colors,
 	)
 	if args.log_file:
-		ls.add_file(args.log_file, args.file_level)
+		ls.add_file(args.log_file, args.file_level, json=args.json)
 	ls.add_console(args.console_level)
 	ls.finish()
 
