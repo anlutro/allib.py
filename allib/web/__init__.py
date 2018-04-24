@@ -121,7 +121,10 @@ class Application:
 
 	def run(self, host, port):
 		from werkzeug.serving import run_simple
-		run_simple(host, port, self.wsgi_app, self.debug, autoreload=self.debug)
+		run_simple(
+			host, port, self.wsgi_app,
+			use_debugger=self.debug, use_reloader=self.debug,
+		)
 
 	def cli(self):
 		import argparse
