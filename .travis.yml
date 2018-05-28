@@ -10,6 +10,6 @@ install:
 
 script:
   - pytest
-  - prospector
+  - pylint -E allib
 
 sudo: false

@@ -1,0 +1,9 @@
+[MASTER]
+indent-string = \t
+
+[MESSAGE CONTROL]
+disable = missing-docstring, bad-continuation, too-few-public-methods
+
+[DESIGN]
+max-args = 8
+max-attributes = 12
